@@ -1,0 +1,15 @@
+{
+  "response": [
+    {
+      "peer_id": %d,
+      "error": {
+        "code": 901,
+        "description": "Can't send messages for users without permission"
+      }
+    },
+    {
+      "peer_id": %d,
+      "message_id": 392
+    }
+  ]
+}

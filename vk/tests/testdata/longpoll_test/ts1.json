@@ -1,0 +1,57 @@
+{
+  "ts": "3",
+  "updates": [
+    {
+      "type": "message_reply",
+      "object": {
+        "date": 1583332586,
+        "from_id": -123,
+        "id": 392,
+        "out": 1,
+        "peer_id": 123,
+        "text": "l",
+        "conversation_message_id": 363,
+        "fwd_messages": [],
+        "important": false,
+        "random_id": 8494866,
+        "attachments": [],
+        "is_hidden": false
+      },
+      "group_id": 123,
+      "event_id": "03428f0338eb60f6e397c10c4739f8274b770a18"
+    },
+    {
+      "type": "message_new",
+      "object": {
+        "message": {
+          "date": 1583246250,
+          "from_id": -123,
+          "id": 387,
+          "out": 0,
+          "peer_id": 123,
+          "text": "kek",
+          "conversation_message_id": 358,
+          "fwd_messages": [],
+          "important": false,
+          "random_id": 0,
+          "attachments": [],
+          "is_hidden": false
+        },
+        "client_info": {
+          "button_actions": [
+            "text",
+            "vkpay",
+            "open_app",
+            "location",
+            "open_link"
+          ],
+          "keyboard": true,
+          "inline_keyboard": true,
+          "lang_id": 0
+        }
+      },
+      "group_id": 123,
+      "event_id": "fe989fe0db287324f53df8c9454876ee7a6752f1"
+    }
+  ]
+}

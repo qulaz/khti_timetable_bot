@@ -1,0 +1,67 @@
+image: "golang:1.13.10-buster"
+
+cache:
+  paths:
+    - /apt-cache
+    - /go/pkg
+    - /go/src
+
+before_script:
+  - go mod download
+
+stages:
+  - formatting
+  - testing
+  - building
+  - deploying
+
+gofmt:
+  stage: formatting
+  only:
+    - master
+    - merge_requests
+  before_script: []
+  script:
+    - test -z $(gofmt -l -s .)
+
+test_bot:
+  stage: testing
+  when: never
+  only:
+    - master
+    - merge_requests
+  script:
+    - cd bot
+    - go test -cover -coverprofile=coverage.out ./...
+    - go tool cover -func coverage.out
+  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
+
+test_vk_library:
+  stage: testing
+  only:
+    - master
+    - merge_requests
+  script:
+    - cd vk
+    - go test -cover -coverprofile=coverage.out -coverpkg=./  ./...
+    - go tool cover -func coverage.out
+  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
+
+build:
+  stage: building
+  when: manual
+  only:
+    - master
+    - merge_requests
+  script:
+    - echo "Building..."
+
+
+deploy:
+  stage: deploying
+  when: manual
+  only:
+    - master
+    - merge_requests
+  script:
+    - echo "Deploying..."

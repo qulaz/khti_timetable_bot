@@ -1,0 +1,42 @@
+{
+  "ts": "6",
+  "updates": [
+    {
+      "type": "message_edit",
+      "object": {
+        "date": 1583338337,
+        "from_id": 123,
+        "id": 364,
+        "out": 1,
+        "peer_id": 123,
+        "text": "лол",
+        "conversation_message_id": 364,
+        "fwd_messages": [],
+        "important": false,
+        "random_id": 0,
+        "attachments": [],
+        "is_hidden": false,
+        "update_time": 1583338337
+      },
+      "group_id": 123,
+      "event_id": "16aa8578251c1b336701b8defc7f98c22f62d804"
+    },
+    {
+      "type": "message_allow",
+      "object": {
+        "user_id": 123,
+        "key": "testKey"
+      },
+      "group_id": 123,
+      "event_id": "16aa8578251c1b336701b8defc7f98c22f62d804"
+    },
+    {
+      "type": "message_deny",
+      "object": {
+        "user_id": 123
+      },
+      "group_id": 123,
+      "event_id": "16aa8578251c1b336701b8defc7f98c22f62d804"
+    }
+  ]
+}
