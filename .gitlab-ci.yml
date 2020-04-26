@@ -26,7 +26,7 @@ gofmt:
 
 test_bot:
   stage: testing
-  when: never
+  when: manual
   only:
     - master
     - merge_requests
