@@ -1,13 +1,13 @@
 image: "golang:1.13.10-buster"
 
-cache:
-  paths:
-    - /apt-cache
-    - /go/pkg
-    - /go/src
-
-before_script:
-  - go mod download
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  before_script:
+    - mkdir -p .go
+  cache:
+    paths:
+      - .go/pkg/mod/
 
 stages:
   - formatting
@@ -26,7 +26,7 @@ gofmt:
 
 test_bot:
   stage: testing
-  when: manual
+  extends: .go-cache
   only:
     - master
     - merge_requests
@@ -38,6 +38,7 @@ test_bot:
 
 test_vk_library:
   stage: testing
+  extends: .go-cache
   only:
     - master
     - merge_requests
@@ -49,6 +50,7 @@ test_vk_library:
 
 build:
   stage: building
+  extends: .go-cache
   when: manual
   only:
     - master
@@ -59,6 +61,7 @@ build:
 
 deploy:
   stage: deploying
+  extends: .go-cache
   when: manual
   only:
     - master
