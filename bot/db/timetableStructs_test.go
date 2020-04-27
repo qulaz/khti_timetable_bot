@@ -18,7 +18,7 @@ func TestTimetable_WriteInDB(t *testing.T) {
 		t.Fatalf("Ошибка записи расписания в базу данных: %+v\n", err)
 	}
 
-	for code, _ := range timetable.Groups {
+	for code := range timetable.Groups {
 		if _, err := GetGroupByGroupCode(code); err != nil {
 			t.Errorf("Не найдена группа с кодом %q: %+v\n", code, err)
 		}
@@ -60,7 +60,7 @@ func TestTimetable_GetStringifyedSchedule(t *testing.T) {
 		}
 	}
 
-	for code, _ := range timetable.Groups {
+	for code := range timetable.Groups {
 		for weekNum := 0; weekNum < 2; weekNum++ {
 			for _, dayName := range weekdays {
 				s, err := timetable.GetStringifyedSchedule(code, weekNum+1, dayName)
@@ -100,7 +100,7 @@ func TestTimetable_GetWeekSchedule(t *testing.T) {
 		t.Errorf("Ф-я отработала без ошибок с переданной несуществующей группой. Результат ее работы: %+v\n", res)
 	}
 
-	for code, _ := range timetable.Groups {
+	for code := range timetable.Groups {
 		for weekNum := 0; weekNum < 2; weekNum++ {
 			tcase := timetable.Groups[code].WeekSchedule[weekNum]
 			res, err := timetable.GetWeekSchedule(code, weekNum+1)
@@ -126,7 +126,7 @@ func TestWeekSchedule_GetDaySchedule(t *testing.T) {
 		t.Fatalf("Ошибка получения расписания из базы данных: %+v\n", err)
 	}
 
-	for code, _ := range timetable.Groups {
+	for code := range timetable.Groups {
 		for weekNum := 0; weekNum < 2; weekNum++ {
 			weekSchedule := timetable.Groups[code].WeekSchedule[weekNum]
 
@@ -156,7 +156,7 @@ func TestWeekSchedule_ToString(t *testing.T) {
 	weekdays := tools.Weekdays
 	weekdays = append(weekdays, FullWeek)
 
-	for code, _ := range timetable.Groups {
+	for code := range timetable.Groups {
 		for weekNum := 0; weekNum < 2; weekNum++ {
 			weekSchedule := timetable.Groups[code].WeekSchedule[weekNum]
 
