@@ -27,11 +27,21 @@ gofmt:
 test_bot:
   stage: testing
   extends: .go-cache
+  services:
+    - postgres:12-alpine
   only:
     - master
     - merge_requests
+  variables:
+    IS_CI_TEST: "true"
+    POSTGRES_HOST: "postgres"
+    POSTGRES_PORT: 5432
+    POSTGRES_USER: "postgres"
+    POSTGRES_DB: "test"
+    POSTGRES_PASSWORD: "postgres"
   script:
     - cd bot
+    - cat $ENV_FILE > .env
     - go test -cover -coverprofile=coverage.out ./...
     - go tool cover -func coverage.out
   coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
