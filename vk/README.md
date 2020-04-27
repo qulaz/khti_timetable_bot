@@ -1,4 +1,5 @@
 # VK
+[![coverage report](https://gitlab.com/qulaz/khti_timetable_bot/badges/master/coverage.svg?job=test_vk_library)](https://gitlab.com/qulaz/khti_timetable_bot/-/commits/master/vk)
 
 Небольшая библиотека для создания чат-ботов во ВКонтакте.
 
