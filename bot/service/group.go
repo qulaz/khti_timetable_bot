@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"github.com/pkg/errors"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
@@ -95,4 +96,64 @@ func buildGroupKeyboard(limit, offset int) (*vk.Keyboard, error) {
 	}
 
 	return k, nil
+}
+
+func GroupCommand(d *Data) error {
+	var err error
+
+	switch body := d.u.Message.MessageBody; body {
+	// Обработка пагинации
+	case prevBody, nextBody:
+		if d.u.Message.Payload == nil {
+			return errors.New("Payload равен nil")
+		}
+
+		d.K, err = buildGroupKeyboard(groupsLimit, d.u.Message.Payload.Offset)
+		if err != nil {
+			return errors.Wrap(err, "ошибка построения клавиатуры групп")
+		}
+
+		d.Answer = "Выбери группу, в которой ты учишься"
+		return nil
+	// Дефолтный случай - выбор группы. Ожидается что body - код группы
+	default:
+		g, err := db.GetGroupByGroupCode(body)
+		if err != nil {
+			if err.Error() == sql.ErrNoRows.Error() {
+				d.Answer = "Нет такой группы"
+				return err
+			}
+			return err
+		}
+
+		var isNewUser = false
+		// Если пользователь уже существует - обновляем группу, иначе создаем пользователя
+		if user, err := db.GetUserByVkID(d.u.Message.PeerID); err == nil {
+			if err := user.ChangeGroup(g.Code); err != nil {
+				return errors.Wrapf(err, "ошибка смены группы с %s на %s", user.Group.Code, g.Code)
+			}
+		} else {
+			if err := db.CreateUser(d.u.Message.PeerID, g.Id); err != nil {
+				return errors.Wrap(err, "ошибка создания нового пользователя")
+			}
+			isNewUser = true
+		}
+
+		d.K = MainKeyboard
+
+		if isNewUser {
+			d.Answer = "Группа выбрана! Теперь тебе будут приходить уведомления об изменениях в расписании, " +
+				"а также о важных новостях института и группы.\n\n" +
+				"Подробнее о командах и о том, что они делают:\n"
+			if d.u.ClientInfo.IsKeyboardSupported() {
+				d.Answer += MainKeyboardHelp
+			} else {
+				d.Answer += NonKeyboardMainHelp
+			}
+		} else {
+			d.Answer = "Группа успешно изменена!"
+		}
+	}
+
+	return nil
 }
