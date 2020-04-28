@@ -65,8 +65,8 @@ type ButtonPayload struct {
 	// Команда
 	Command string `json:"command"`
 	// Параметры команды
-	Body   string `json:"body"`
-	Offset int    `json:"offset"`
+	Body   string `json:"body,omitempty"`
+	Offset int    `json:"offset,omitempty"`
 	// Дополнительные поля
 	Other *H `json:"other,omitempty"`
 }
