@@ -144,7 +144,7 @@ func (d DaySchedule) ToString() string {
 //  FullWeek, чтобы вернуть расписание на всю неделю
 func (s WeekSchedule) ToString(dayName string) (string, error) {
 	if d, err := s.GetDaySchedule(dayName); err == nil {
-		return fmt.Sprintf("> %s:\n%s", tools.FormatedWeekdays[dayName], d.ToString()), nil
+		return fmt.Sprintf("> %s:\n%s", tools.FormattedWeekdays[dayName], d.ToString()), nil
 	}
 
 	if dayName != FullWeek {
@@ -154,7 +154,7 @@ func (s WeekSchedule) ToString(dayName string) (string, error) {
 	tmp := make([]string, 0, 6)
 	for _, dayName := range tools.Weekdays {
 		if d, ok := s[dayName]; ok {
-			tmp = append(tmp, fmt.Sprintf("> %s:\n%s", tools.FormatedWeekdays[dayName], d.ToString()))
+			tmp = append(tmp, fmt.Sprintf("> %s:\n%s", tools.FormattedWeekdays[dayName], d.ToString()))
 		} else {
 			return "", errors.Errorf("не найден день недели в расписании: %s", dayName)
 		}
