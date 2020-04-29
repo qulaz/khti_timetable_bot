@@ -1,8 +1,10 @@
 package tools
 
 import (
+	"fmt"
 	"github.com/getsentry/sentry-go"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
+	"strings"
 	"time"
 )
 
@@ -70,4 +72,42 @@ func TodayName() string {
 // Возвращает переданный time.Time с обнуленной датой
 func RemoveDate(t time.Time) time.Time {
 	return TimeOnly(t.Hour(), t.Minute(), t.Second(), LocalTz)
+}
+
+// Возвращает из time.Duration количество часов, минут и секунд
+func DurationToHoursMinutesSeconds(d time.Duration) (int, int, int) {
+	t := make([]int, 3, 3)
+	totalSeconds := int(d.Seconds())
+
+	for i := 0; i < 3; i++ {
+		t[i] = totalSeconds % 60
+		totalSeconds /= 60
+	}
+
+	return t[2], t[1], t[0]
+}
+
+func DurationToString(d time.Duration) string {
+	hours, min, sec := DurationToHoursMinutesSeconds(d)
+	if sec > 0 {
+		min++
+	}
+
+	res := make([]string, 0, 3)
+
+	if hours > 0 {
+		res = append(
+			res, fmt.Sprintf("%d %s", hours, SelectionNounForm(hours, []string{"час", "часа", "часов"})),
+		)
+	}
+	if hours > 0 && min > 0 {
+		res = append(res, "и")
+	}
+	if min > 0 {
+		res = append(
+			res, fmt.Sprintf("%d %s", min, SelectionNounForm(min, []string{"минута", "минуты", "минут"})),
+		)
+	}
+
+	return strings.Join(res, " ")
 }

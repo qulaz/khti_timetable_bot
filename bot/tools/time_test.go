@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -112,5 +113,46 @@ func TestTodayName(t *testing.T) {
 				tcase.res,
 			)
 		}
+	}
+}
+
+func TestDurationToHoursMinutesSeconds(t *testing.T) {
+	type testCase struct {
+		d       time.Duration
+		hours   int
+		minutes int
+		seconds int
+	}
+	testCases := []testCase{
+		{time.Second * 15, 0, 0, 15},
+		{time.Minute + time.Second*14, 0, 1, 14},
+		{time.Minute*21 + time.Second*14, 0, 21, 14},
+		{time.Minute*61 + time.Second*14, 1, 1, 14},
+		{time.Hour + time.Minute*61 + time.Second*14, 2, 1, 14},
+	}
+
+	for i, tcase := range testCases {
+		hours, minutes, seconds := DurationToHoursMinutesSeconds(tcase.d)
+		assert.Equalf(t, tcase.hours, hours, "testCase %d", i+1)
+		assert.Equalf(t, tcase.minutes, minutes, "testCase %d", i+1)
+		assert.Equalf(t, tcase.seconds, seconds, "testCase %d", i+1)
+	}
+}
+
+func TestDurationToString(t *testing.T) {
+	type testCase struct {
+		d   time.Duration
+		res string
+	}
+	testCases := []testCase{
+		{time.Second * 5, "1 минута"},
+		{time.Minute * 45, "45 минут"},
+		{time.Minute*45 + time.Second*34, "46 минут"},
+		{time.Hour + time.Minute*5 + time.Second*10, "1 час и 6 минут"},
+		{time.Hour*2 + time.Minute*22 + time.Second*10, "2 часа и 23 минуты"},
+	}
+
+	for i, tcase := range testCases {
+		assert.Equalf(t, tcase.res, DurationToString(tcase.d), "testCase %d", i+1)
 	}
 }

@@ -1,6 +1,9 @@
 package service
 
 import (
+	"fmt"
+	"github.com/pkg/errors"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"time"
 )
@@ -73,4 +76,61 @@ func CurrentLessonNum() int {
 	}
 
 	return 1000
+}
+
+// Возвращает время до конца/начала пары в зависимости от текущего времени
+func TimeToRing() time.Duration {
+	now := tools.RemoveDate(tools.Now())
+	currentLessonNum := CurrentLessonNum()
+	isLesson := IsLesson()
+
+	if currentLessonNum == 1000 {
+		return -1
+	}
+
+	// Пары еще не начались / уже закончились
+	if currentLessonNum == -1 || currentLessonNum == 999 || (!isLesson && currentLessonNum == 5) {
+		currentLessonNum = 1
+	}
+
+	if isLesson {
+		endLessonTime := LessonTimes[currentLessonNum-1][1]
+		return endLessonTime.Sub(now)
+	} else {
+		// Если пары еще не начались/уже закончились - отдаем время до первой пары
+		if currentLessonNum == 1 && (now.Before(LessonTimes[0][0]) || now.After(LessonTimes[len(LessonTimes)-1][1])) {
+			firstLessonTime := LessonTimes[0][0]
+
+			// Добавляем 1 день ко времени начала первой пары, если она начнется на следующий день
+			if now.Hour() >= LessonTimes[len(LessonTimes)-1][1].Hour() {
+				firstLessonTime = firstLessonTime.Add(time.Hour * 24)
+			}
+
+			return firstLessonTime.Sub(now)
+		}
+
+		startLessonTime := LessonTimes[currentLessonNum][0]
+		return startLessonTime.Sub(now)
+	}
+}
+
+func RingCommand(d *Data) error {
+	ringDuration := TimeToRing()
+	if ringDuration < 0 {
+		helpers.Logger.Errorw("TimeToRing вернул отрицательный Duration",
+			"now", tools.Now(), "res", ringDuration,
+		)
+		return errors.Errorf(
+			"TimeToRing вернул отрицательный Duration.\nnow %v;\nres %d", tools.Now(), ringDuration,
+		)
+	}
+	strDuration := tools.DurationToString(ringDuration)
+
+	if IsLesson() {
+		d.Answer = fmt.Sprintf("До конца пары осталось %s", strDuration)
+	} else {
+		d.Answer = fmt.Sprintf("До начала пары осталось %s", strDuration)
+	}
+
+	return nil
 }

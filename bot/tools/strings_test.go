@@ -54,3 +54,26 @@ func TestSelectNonEmptyString(t *testing.T) {
 		assert.Equalf(t, tcase.res, SelectNonEmptyString(tcase.s1, tcase.s2), "testCase %d", i)
 	}
 }
+
+func TestSelectionNounForm(t *testing.T) {
+	type testCase struct {
+		num    int
+		titles []string
+		res    string
+	}
+	testCases := []testCase{
+		{1, []string{"минута", "минуты", "минут"}, "минута"},
+		{2, []string{"минута", "минуты", "минут"}, "минуты"},
+		{3, []string{"минута", "минуты", "минут"}, "минуты"},
+		{5, []string{"минута", "минуты", "минут"}, "минут"},
+		{10, []string{"минута", "минуты", "минут"}, "минут"},
+		{21, []string{"минута", "минуты", "минут"}, "минута"},
+		{1, []string{"час", "часа", "часов"}, "час"},
+		{22, []string{"час", "часа", "часов"}, "часа"},
+		{5, []string{"час", "часа", "часов"}, "часов"},
+	}
+
+	for i, tcase := range testCases {
+		assert.Equalf(t, tcase.res, SelectionNounForm(tcase.num, tcase.titles), "testCase %d", i)
+	}
+}
