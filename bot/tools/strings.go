@@ -27,3 +27,28 @@ func SelectNonEmptyString(s1, s2 string) string {
 	}
 	return ""
 }
+
+// Возвращает правильную форму существительного с числительным.
+//  number - числительное для которого нужно подобрать правильную форму слова
+//  titles - слайс со словом в 3 формах в правильной последовательности: именительный падеж единственное число
+//  (сочетается с 1), именительный падеж множественное число (сочетается с 2),
+//  родительный падеж множественное число (сочетается с 5)
+// Пример:
+//  titles := []string{"минута", "минуты", "минут"}
+//  SelectionNounForm(1, titles) // минута
+//  SelectionNounForm(2, titles) // минуты
+//  SelectionNounForm(5, titles) // минут
+//
+// сс: https://gist.github.com/chiliec/22e34af2d08a964fc1418908a19b0c15
+func SelectionNounForm(number int, titles []string) string {
+	cases := []int{2, 0, 1, 1, 1, 2}
+	var currentCase int
+	if number%100 > 4 && number%100 < 20 {
+		currentCase = 2
+	} else if number%10 < 5 {
+		currentCase = cases[number%10]
+	} else {
+		currentCase = cases[5]
+	}
+	return titles[currentCase]
+}
