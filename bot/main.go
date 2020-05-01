@@ -74,6 +74,8 @@ func main() {
 	b.HandleCommand(common.TimetableCommand, handlers.Timetable)
 	b.HandleCommand(common.WeekCommand, handlers.Week)
 	b.HandleCommand(common.SettingsCommand, handlers.Settings)
+	b.HandleMessageAllow(handlers.Allow)
+	b.HandleMessageDeny(handlers.Deny)
 
 	if err := b.Run(); err != nil {
 		helpers.Logger.Fatalf("Ошибка запуска бота: %+v", err)
