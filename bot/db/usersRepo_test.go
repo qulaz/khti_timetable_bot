@@ -2,7 +2,7 @@ package db
 
 import "testing"
 
-const UserFixtureCount = 11
+const UserFixtureCount = 13
 
 func TestCreateUser(t *testing.T) {
 	PrepareTestDatabase()

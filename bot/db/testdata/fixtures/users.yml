@@ -64,3 +64,15 @@
   is_active: false
   is_subscribed: true
   is_newsletter_enabled: false
+- id: 12
+  vk_id: 12
+  group_id: 23
+  is_active: true
+  is_subscribed: true
+  is_newsletter_enabled: true
+- id: 13
+  vk_id: 13
+  group_id: 27
+  is_active: true
+  is_subscribed: true
+  is_newsletter_enabled: true
