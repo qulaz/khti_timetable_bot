@@ -3,22 +3,8 @@ package parser
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
-	"os"
-	"path"
-	"runtime"
 	"testing"
 )
-
-func init() {
-	// Тесты должны запускаться из дериктории в котрой находится этот файл
-	_, filename, _, _ := runtime.Caller(0)
-
-	dir := path.Join(path.Dir(filename))
-	err := os.Chdir(dir)
-	if err != nil {
-		panic(err)
-	}
-}
 
 func TestParse__wrong_file_type(t *testing.T) {
 	_, err := Parse("testdata/timetable.json")

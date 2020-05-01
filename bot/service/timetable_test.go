@@ -4,21 +4,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
-	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/parser"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
-	"log"
-	"os"
 	"testing"
 	"time"
 )
-
-func init() {
-	if err := os.Chdir(helpers.GetProjectRootDir()); err != nil {
-		log.Fatalf("timetable_test: %v", err)
-	}
-}
 
 func TestNextLesson(t *testing.T) {
 	timetable, err := parser.Parse("parser/testdata/timetable.xls")

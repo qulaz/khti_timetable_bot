@@ -9,14 +9,11 @@ import (
 	"os"
 )
 
-func init() {
+// Инициализация всей инфраструктуры приложения, кроме базы данных
+func TestInits() {
 	if err := os.Chdir(helpers.GetProjectRootDir()); err != nil {
 		panic(err)
 	}
-}
-
-// Инициализация всей инфраструктуры приложения, кроме базы данных
-func TestInits() {
 	helpers.LoadConfigFromEnv()
 	helpers.InitLogger()
 }
