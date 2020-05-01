@@ -8,7 +8,7 @@ require (
 	github.com/containerd/continuity v0.0.0-20200228182428-0f16d7a0959c // indirect
 	github.com/extrame/goyymmdd v0.0.0-20181026012948-914eb450555b // indirect
 	github.com/extrame/ole2 v0.0.0-20160812065207-d69429661ad7 // indirect
-	github.com/getsentry/sentry-go v0.5.1
+	github.com/getsentry/sentry-go v0.6.0
 	github.com/go-testfixtures/testfixtures/v3 v3.1.1
 	github.com/golang-migrate/migrate/v4 v4.9.1
 	github.com/joho/godotenv v1.3.0
