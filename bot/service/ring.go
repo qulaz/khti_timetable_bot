@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/getsentry/sentry-go"
 	"github.com/pkg/errors"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
@@ -74,6 +75,16 @@ func CurrentLessonNum() int {
 			return i + 1
 		}
 	}
+
+	helpers.Logger.Errorw("Не нашлась идущая сейчас пара CurrentLessonNum()", "now", n)
+	sentry.WithScope(func(scope *sentry.Scope) {
+		scope.SetTag("func", "CurrentLessonNum")
+		scope.AddBreadcrumb(
+			&sentry.Breadcrumb{Data: map[string]interface{}{"now": n}}, 1,
+		)
+
+		sentry.CaptureException(errors.New("Не нашлась текущая пара CurrentLessonNum()"))
+	})
 
 	return 1000
 }
