@@ -11,6 +11,7 @@ import (
 const UnknownErrorMessage = "Неизвестная ошибка. Попробуйте повторить позже."
 
 var UnknownError = errors.New(UnknownErrorMessage)
+var IgnoreMessageError = errors.New("IgnoreMessageError")
 
 // Шорткат для отправки сообщения об ошибке пользователю
 func SendErrorMessageToUser(b *vk.Bot, message string, eventID string, peerID int) {
