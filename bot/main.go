@@ -70,6 +70,7 @@ func main() {
 	b.HandleCommand(common.StartCommand, handlers.Start)
 	b.HandleCommand(common.GroupCommand, handlers.Group)
 	b.HandleCommand(common.RingCommand, handlers.Ring)
+	b.HandleCommand(common.TimetableCommand, handlers.Timetable)
 
 	if err := b.Run(); err != nil {
 		helpers.Logger.Fatalf("Ошибка запуска бота: %+v", err)
