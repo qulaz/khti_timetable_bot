@@ -9,7 +9,5 @@ const (
 	WeekCommand      = "/неделя"
 	RingCommand      = "/звонок"
 
-	SettingsCommand         = "/настройки"
-	SubscribeToggleCommand  = "/уведомления"
-	NewsletterToggleCommand = "/рассылка"
+	SettingsCommand = "/настройки"
 )
