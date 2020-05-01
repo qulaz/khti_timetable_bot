@@ -68,6 +68,7 @@ func main() {
 
 	b.HandleMessage("Начать", handlers.Start)
 	b.HandleCommand(common.StartCommand, handlers.Start)
+	b.HandleCommand(common.MainCommand, handlers.Main)
 	b.HandleCommand(common.GroupCommand, handlers.Group)
 	b.HandleCommand(common.RingCommand, handlers.Ring)
 	b.HandleCommand(common.TimetableCommand, handlers.Timetable)
