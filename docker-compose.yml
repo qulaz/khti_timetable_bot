@@ -20,7 +20,7 @@ services:
       - internal
     volumes:
       - ".env:/app/.env"
-      - "./bot/parser/testdata/timetable.xls:/app/timetable.xls"
+      - "./timetables/:/app/timetables"
 
   db:
     container_name: khti_timetable_bot_db
