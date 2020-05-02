@@ -10,53 +10,53 @@ image: "golang:1.13.10-buster"
       - .go/pkg/mod/
 
 stages:
-  - formatting
-  - testing
+#  - formatting
+#  - testing
   - building
   - deploying
 
-gofmt:
-  stage: formatting
-  only:
-    - master
-    - merge_requests
-  before_script: []
-  script:
-    - test -z $(gofmt -l -s .)
-
-test_bot:
-  stage: testing
-  extends: .go-cache
-  services:
-    - postgres:12-alpine
-  only:
-    - master
-    - merge_requests
-  variables:
-    IS_CI_TEST: "true"
-    POSTGRES_HOST: "postgres"
-    POSTGRES_PORT: 5432
-    POSTGRES_USER: "postgres"
-    POSTGRES_DB: "test"
-    POSTGRES_PASSWORD: "postgres"
-  script:
-    - cd bot
-    - cat $ENV_FILE > .env
-    - go test -cover -coverprofile=coverage.out ./...
-    - go tool cover -func coverage.out
-  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
-
-test_vk_library:
-  stage: testing
-  extends: .go-cache
-  only:
-    - master
-    - merge_requests
-  script:
-    - cd vk
-    - go test -cover -coverprofile=coverage.out -coverpkg=./  ./...
-    - go tool cover -func coverage.out
-  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
+#gofmt:
+#  stage: formatting
+#  only:
+#    - master
+#    - merge_requests
+#  before_script: []
+#  script:
+#    - test -z $(gofmt -l -s .)
+#
+#test_bot:
+#  stage: testing
+#  extends: .go-cache
+#  services:
+#    - postgres:12-alpine
+#  only:
+#    - master
+#    - merge_requests
+#  variables:
+#    IS_CI_TEST: "true"
+#    POSTGRES_HOST: "postgres"
+#    POSTGRES_PORT: 5432
+#    POSTGRES_USER: "postgres"
+#    POSTGRES_DB: "test"
+#    POSTGRES_PASSWORD: "postgres"
+#  script:
+#    - cd bot
+#    - cat $ENV_FILE > .env
+#    - go test -cover -coverprofile=coverage.out ./...
+#    - go tool cover -func coverage.out
+#  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
+#
+#test_vk_library:
+#  stage: testing
+#  extends: .go-cache
+#  only:
+#    - master
+#    - merge_requests
+#  script:
+#    - cd vk
+#    - go test -cover -coverprofile=coverage.out -coverpkg=./  ./...
+#    - go tool cover -func coverage.out
+#  coverage: '/total:\s+\(statements\)\s+\d+.\d+%/'
 
 build:
   stage: building
