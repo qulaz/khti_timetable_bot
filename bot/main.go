@@ -6,7 +6,9 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/handlers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/parser"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
+	"log"
 	"os"
 	"time"
 )
@@ -45,6 +47,18 @@ func closeApp() {
 	time.Sleep(time.Second * 5)
 }
 
+// Временная функция инициализации расписания в базе данных, чтобы на новой машине автоматически были все записи
+// В дальнейшем заменится на реальный поиск расписания на сайте и запись его в бд
+func loadTimetable() {
+	t, err := parser.Parse("timetable.xls")
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := t.WriteInDB(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	initApp()
 	defer func() {
@@ -57,6 +71,7 @@ func main() {
 		}
 	}()
 	defer closeApp()
+	loadTimetable()
 
 	b, err := vk.CreateBot(vk.Settings{
 		GroupID: helpers.Config.VK_GROUP_ID,

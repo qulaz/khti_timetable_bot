@@ -60,21 +60,38 @@ test_vk_library:
 
 build:
   stage: building
-  extends: .go-cache
+  image: docker:19.03.5
+  services:
+    - docker:dind
   when: manual
   only:
     - master
     - merge_requests
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - echo "Building..."
-
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
 
 deploy:
   stage: deploying
-  extends: .go-cache
   when: manual
+  tags:
+    - server
   only:
     - master
     - merge_requests
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - mkdir -pv ~/projects/khti_timetable_bot && mkdir -pv ~/projects/khti_timetable_bot/db/migrations
   script:
-    - echo "Deploying..."
+    - cp $CI_PROJECT_DIR/docker-compose.yml ~/projects/khti_timetable_bot/docker-compose.yml
+    - cp $CI_PROJECT_DIR/bot/db/migrations/* ~/projects/khti_timetable_bot/db/migrations/
+    - cat $ENV_FILE > ~/projects/khti_timetable_bot/.env
+    - cd ~/projects/khti_timetable_bot
+    - docker-compose pull
+    - docker-compose down
+    - docker image prune -f
+    - docker-compose up -d

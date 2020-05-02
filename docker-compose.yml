@@ -1,0 +1,49 @@
+version: '3.7'
+
+networks:
+  internal:
+    driver: bridge
+
+  traefik:
+    external:
+      name: traefik
+
+volumes:
+  pg_data:
+
+services:
+  bot:
+    container_name: khti_timetable_bot
+    image: registry.gitlab.com/qulaz/khti_timetable_bot:latest
+    tty: true
+    networks:
+      - internal
+    volumes:
+      - ".env:/app/.env"
+      - "./bot/parser/testdata/timetable.xls:/app/timetable.xls"
+
+  db:
+    container_name: khti_timetable_bot_db
+    image: postgres:12-alpine
+    env_file:
+      - .env
+    networks:
+      - internal
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  adminer:
+    container_name: khti_timetable_bot_adminer
+    image: adminer
+    networks:
+      - internal
+      - traefik
+    depends_on:
+      - db
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.khti_timetable_adminer.rule=PathPrefix(`/khti_timetable_bot_adminer`)
+      - traefik.http.services.khti_timetable_adminer.loadbalancer.server.port=8080
+      - traefik.http.routers.khti_timetable_adminer.middlewares=basic-auth@file
+      - traefik.http.routers.khti_timetable_adminer.tls=true
+      - traefik.http.routers.khti_timetable_adminer.tls.certresolver=ssl

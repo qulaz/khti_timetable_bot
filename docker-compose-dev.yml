@@ -1,0 +1,21 @@
+version: '3.7'
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pg_data:
+
+services:
+  db:
+    container_name: khti_timetable_bot_db_dev
+    image: postgres:12-alpine
+    env_file:
+      - bot/.env
+    networks:
+      - internal
+    ports:
+      - 5432:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
