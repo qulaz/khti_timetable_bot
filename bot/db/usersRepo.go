@@ -133,3 +133,53 @@ func GetUsers(limit, offset int) ([]*UserModel, error) {
 
 	return users, nil
 }
+
+// Получение списка пользователей, которые подписаны на уведомления об изменениях в расписании
+func GetSubscribedUsers() ([]*UserModel, error) {
+	users := make([]*UserModel, 0, 20)
+
+	rows, err := db.Query(
+		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, " +
+			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id " +
+			"WHERE users.is_subscribed = true AND users.is_active = true;",
+	)
+	if err != nil {
+		return users, errors.WithStack(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user, err := parseUserModel(rows)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+// Получение списка пользователей, которые подписаны на новости института/группы
+func GetUsersWithEnabledNewsletter() ([]*UserModel, error) {
+	users := make([]*UserModel, 0, 20)
+
+	rows, err := db.Query(
+		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, " +
+			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id " +
+			"WHERE users.is_newsletter_enabled = true AND users.is_active = true;",
+	)
+	if err != nil {
+		return users, errors.WithStack(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		user, err := parseUserModel(rows)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
