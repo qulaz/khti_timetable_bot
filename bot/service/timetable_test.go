@@ -5,14 +5,15 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
-	"gitlab.com/qulaz/khti_timetable_bot/bot/parser"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"testing"
 	"time"
 )
 
 func TestNextLesson(t *testing.T) {
-	timetable, err := parser.Parse("parser/testdata/timetable.xls")
+	db.PrepareTestDatabase()
+
+	timetable, err := db.GetTimetable()
 	assert.NoError(t, err)
 
 	type testCase struct {

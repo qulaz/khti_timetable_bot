@@ -3,6 +3,7 @@ module gitlab.com/qulaz/khti_timetable_bot
 go 1.13
 
 require (
+	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/caarlos0/env/v6 v6.2.1
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
 	github.com/containerd/continuity v0.0.0-20200228182428-0f16d7a0959c // indirect
@@ -17,6 +18,7 @@ require (
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/ory/dockertest/v3 v3.5.4
 	github.com/pkg/errors v0.9.1
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sergeilem/xls v0.0.2-0.20190306204045-0a1f9a7128b8
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/stretchr/testify v1.5.1
