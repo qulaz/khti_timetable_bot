@@ -7,11 +7,11 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
-	"testing"
 )
 
-func TestSettingsCommand_timetable(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestSettingsCommand_timetable() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "расписание"
 	mocks.StartMessage.Message.PeerID = 2
@@ -39,8 +39,9 @@ func TestSettingsCommand_timetable(t *testing.T) {
 	assert.Equal(t, vk.COLOR_NEGATIVE, k.Color)
 }
 
-func TestSettingsCommand_newsletter(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestSettingsCommand_newsletter() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "рассылка"
 	mocks.StartMessage.Message.PeerID = 2
@@ -68,8 +69,9 @@ func TestSettingsCommand_newsletter(t *testing.T) {
 	assert.Equal(t, vk.COLOR_NEGATIVE, k.Color)
 }
 
-func TestSettingsCommand_ignore(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestSettingsCommand_ignore() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "unknown"
 	mocks.StartMessage.Message.PeerID = 2
@@ -80,8 +82,9 @@ func TestSettingsCommand_ignore(t *testing.T) {
 	assert.Equal(t, common.IgnoreMessageError, err)
 }
 
-func TestSettingsCommand_keyboard(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestSettingsCommand_keyboard() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = ""
 	mocks.StartMessage.Message.PeerID = 2

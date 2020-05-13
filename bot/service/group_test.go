@@ -2,20 +2,43 @@ package service
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gopkg.in/khaiql/dbcleaner.v2/engine"
 	"testing"
 )
 
-func TestMain(m *testing.M) {
-	db.TestMainWithDb(m)
+var Cleaner = dbcleaner.New()
+
+type ServiceTestSuite struct {
+	suite.Suite
 }
 
-func Test_buildGroupKeyboard_success(t *testing.T) {
+func (suite *ServiceTestSuite) SetupSuite() {
+	common.TestInits()
+	db.InitTestDatabase()
+	pg := engine.NewPostgresEngine(helpers.Config.POSTGRES_DSN)
+	Cleaner.SetEngine(pg)
+}
+
+func (suite *ServiceTestSuite) TearDownSuite() {
+	Cleaner.Clean("groups", "timetable", "users")
+	db.CloseDatabase()
+}
+
+func (suite *ServiceTestSuite) SetupTest() {
+	Cleaner.Acquire("groups", "timetable", "users")
 	db.PrepareTestDatabase()
+}
+
+func (suite *ServiceTestSuite) Test_buildGroupKeyboard_success() {
+	t := suite.T()
 
 	total, err := db.GroupsCount()
 	tools.Fatal(t, assert.NoError(t, err))
@@ -32,14 +55,17 @@ func Test_buildGroupKeyboard_success(t *testing.T) {
 	assert.Equal(t, 0, k.Buttons[len(k.Buttons)-1][0].(vk.TextButton).Action.Payload.Offset)
 }
 
-func Test_buildGroupKeyboard_tooBigLimit(t *testing.T) {
+func (suite *ServiceTestSuite) Test_buildGroupKeyboard_tooBigLimit() {
+	t := suite.T()
+
 	k, err := buildGroupKeyboard(groupsLimit+1, 0)
 	assert.Error(t, err)
 	assert.Nil(t, k)
 }
 
-func TestGroupCommand_success_pagination(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestGroupCommand_success_pagination() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageCommand = "/group"
 	mocks.StartMessage.Message.MessageBody = nextBody
@@ -63,8 +89,9 @@ func TestGroupCommand_success_pagination(t *testing.T) {
 	assert.Equal(t, groupsLimit+1, data.K.ButtonCount())
 }
 
-func TestGroupCommand_nil_payload(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestGroupCommand_nil_payload() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageCommand = "/group"
 	mocks.StartMessage.Message.MessageBody = nextBody
@@ -75,8 +102,9 @@ func TestGroupCommand_nil_payload(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestGroupCommand_unknown_group(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestGroupCommand_unknown_group() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "55-5"
 
@@ -85,8 +113,9 @@ func TestGroupCommand_unknown_group(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestGroupCommand_success_new_and_change(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestGroupCommand_success_new_and_change() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "58-1"
 
@@ -109,8 +138,9 @@ func TestGroupCommand_success_new_and_change(t *testing.T) {
 	assert.Equal(t, "Группа успешно изменена!", data.Answer)
 }
 
-func TestGroupCommand_nonkeyboard_answer(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestGroupCommand_nonkeyboard_answer() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "58-1"
 	mocks.StartMessage.ClientInfo.Keyboard = false
@@ -123,4 +153,8 @@ func TestGroupCommand_nonkeyboard_answer(t *testing.T) {
 	assert.Equal(t, "58-1", u.Group.Code)
 	assert.Contains(t, data.Answer, "Группа выбрана!")
 	assert.Contains(t, data.Answer, NonKeyboardMainHelp)
+}
+
+func TestServiceSuite(t *testing.T) {
+	suite.Run(t, new(ServiceTestSuite))
 }

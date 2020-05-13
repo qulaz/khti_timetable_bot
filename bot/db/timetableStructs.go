@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
+	"reflect"
 	"strings"
 )
 
@@ -102,6 +103,25 @@ func (t *Timetable) FromJson(j string) error {
 	}
 
 	return nil
+}
+
+// Отличается ли этот объект расписания, от того, что сохранен в базе данных
+func (t *Timetable) IsNewTimetable() (bool, error) {
+	dbTimetable, err := GetTimetable()
+	if err != nil {
+		return false, err
+	}
+
+	dbJson, err := dbTimetable.ToJson()
+	if err != nil {
+		return false, nil
+	}
+	tJson, err := t.ToJson()
+	if err != nil {
+		return false, nil
+	}
+
+	return !reflect.DeepEqual(dbJson, tJson), nil
 }
 
 // Расписание на день. Тип представляет из себя слайс строк с названиями предметов: [ 2 пара 3 пара  ]

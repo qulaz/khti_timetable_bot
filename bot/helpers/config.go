@@ -19,7 +19,6 @@ type config struct {
 	POSTGRES_DSN      string `env:"POSTGRES_DSN"`
 
 	IS_DEBUG    bool   `env:"DEBUG" envDefault:"false"`
-	IS_CI_TEST  bool   `env:"IS_CI_TEST" envDefault:"false"` // В системах CI/CD устанавливается в true
 	LOG_LEVEL   string `env:"LOG_LEVEL" envDefault:"INFO"`
 	PROJECT_DIR string
 

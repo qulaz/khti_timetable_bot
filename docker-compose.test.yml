@@ -1,0 +1,46 @@
+version: '3.7'
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  go_test_data:
+
+services:
+  bot_test:
+    container_name: khti_timetable_bot_test
+    image: golang:1.13.10-buster
+    working_dir: /khti_timetable_bot/bot
+    command: bash -c "go test -cover -coverprofile=coverage.out ./... && go tool cover -func coverage.out"
+    environment:
+      - POSTGRES_DSN=postgres://postgres:postgres@db_test:5432/test?sslmode=disable
+      - GOPATH=/go
+    volumes:
+      - go_test_data:/go
+      - ./:/khti_timetable_bot
+    networks:
+      - internal
+    depends_on:
+      - db_test
+
+  vk_library_test:
+    container_name: khti_timetable_bot_test_vk_library
+    image: golang:1.13.10-buster
+    working_dir: /khti_timetable_bot/vk
+    command: bash -c "go test -cover -coverprofile=coverage.out -coverpkg=./  ./... && go tool cover -func coverage.out"
+    environment:
+      - GOPATH=/go
+    volumes:
+      - go_test_data:/go
+      - ./:/khti_timetable_bot
+
+  db_test:
+    container_name: khti_timetable_bot_db_test
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=test
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - internal

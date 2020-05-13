@@ -1,51 +1,36 @@
 package db
 
-import "testing"
+import (
+	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
+)
 
 const UserFixtureCount = 13
 
-func TestCreateUser(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestCreateUser() {
 	vkid := 50
-	if err := CreateUser(vkid, 1); err != nil {
-		t.Fatalf("Ошибка создания пользователя: %+v\n", err)
-	}
-	u, err := GetUserByVkID(vkid)
-	if err != nil {
-		t.Fatalf("Созданный пользователь не найден: %+v\n", err)
-	}
-	if u.VkID != vkid {
-		t.Errorf("vk_id созданного пользователя не совпадает с заданным %d != %d\n", u.VkID, vkid)
-	}
-	if !u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive {
-		t.Errorf("Стандартные значения не совпадают с ожидаемыми: %+v\n", u)
-	}
 
-	if err := CreateUser(1, 5); err == nil {
-		t.Error("Создан пользователь с дублирующимся vk_id")
-	}
+	err := CreateUser(vkid, 1)
+	tools.Fatal(suite.T(), suite.NoError(err))
+
+	u, err := GetUserByVkID(vkid)
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(vkid, u.VkID)
+	suite.Falsef(!u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive, "user: %+v", u)
+
+	err = CreateUser(1, 5)
+	suite.Error(err)
 }
 
-func TestGetUserByVkID(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestGetUserByVkID() {
 	vkid := 1
+
 	u, err := GetUserByVkID(vkid)
-	if err != nil {
-		t.Fatalf("Ошибка получения пользователя: %+v\n", err)
-	}
-	if u.VkID != vkid {
-		t.Errorf("vk_id созданного пользователя не совпадает с заданным %d != %d\n", u.VkID, vkid)
-	}
-	if !u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive {
-		t.Errorf("Стандартные значения не совпадают с ожидаемыми: %+v\n", u)
-	}
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(vkid, u.VkID)
+	suite.Falsef(!u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive, "user: %+v", u)
 }
 
-func TestGetUsers(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestGetUsers() {
 	type testCase struct {
 		limit  int
 		offset int
@@ -63,19 +48,12 @@ func TestGetUsers(t *testing.T) {
 
 	for i, tcase := range testCases {
 		users, err := GetUsers(tcase.limit, tcase.offset)
-		if err != nil {
-			t.Errorf("%d. Ошибка при получении списка пользователей в тест кейсе: %+v\n", i+1, err)
-			continue
-		}
-		if lenG := len(users); lenG != tcase.len {
-			t.Errorf("%d. Ожидаемое кол-во пользователей %d не равно действительному %d\n", i+1, tcase.len, lenG)
-		}
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+		suite.Equal(tcase.len, len(users))
 	}
 }
 
-func TestUserModel_SetSubscribe(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestUserModel_SetSubscribe() {
 	type testCase struct {
 		vkid int
 		v    bool
@@ -91,23 +69,15 @@ func TestUserModel_SetSubscribe(t *testing.T) {
 
 	for i, tcase := range testCases {
 		u, err := GetUserByVkID(tcase.vkid)
-		if err != nil {
-			t.Errorf("%d. Ошибка получения пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if err := u.SetSubscribe(tcase.v); err != nil {
-			t.Errorf("%d. Ошибка смены подписки пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if u.IsSubscribed != tcase.v {
-			t.Errorf("%d. Ошибка u.IsSubscribed != tcase.v; %v != %v\n", i+1, u.IsSubscribed, tcase.v)
-		}
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+
+		err = u.SetSubscribe(tcase.v)
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+		suite.Equal(tcase.v, u.IsSubscribed)
 	}
 }
 
-func TestUserModel_SetNewsletterEnabling(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestUserModel_SetNewsletterEnabling() {
 	type testCase struct {
 		vkid int
 		v    bool
@@ -123,23 +93,15 @@ func TestUserModel_SetNewsletterEnabling(t *testing.T) {
 
 	for i, tcase := range testCases {
 		u, err := GetUserByVkID(tcase.vkid)
-		if err != nil {
-			t.Errorf("%d. Ошибка получения пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if err := u.SetNewsletterEnabling(tcase.v); err != nil {
-			t.Errorf("%d. Ошибка смены подписки пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if u.IsNewsletterEnabled != tcase.v {
-			t.Errorf("%d. Ошибка u.IsNewsletterEnabled != tcase.v; %v != %v\n", i+1, u.IsNewsletterEnabled, tcase.v)
-		}
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+
+		err = u.SetNewsletterEnabling(tcase.v)
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+		suite.Equal(tcase.v, u.IsNewsletterEnabled)
 	}
 }
 
-func TestUserModel_SetActive(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestUserModel_SetActive() {
 	type testCase struct {
 		vkid int
 		v    bool
@@ -156,23 +118,15 @@ func TestUserModel_SetActive(t *testing.T) {
 
 	for i, tcase := range testCases {
 		u, err := GetUserByVkID(tcase.vkid)
-		if err != nil {
-			t.Errorf("%d. Ошибка получения пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if err := u.SetActive(tcase.v); err != nil {
-			t.Errorf("%d. Ошибка смены типа активности пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if u.IsActive != tcase.v {
-			t.Errorf("%d. Ошибка u.IsActive != tcase.v; %v != %v\n", i+1, u.IsActive, tcase.v)
-		}
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+
+		err = u.SetActive(tcase.v)
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+		suite.Equal(tcase.v, u.IsActive)
 	}
 }
 
-func TestUserModel_ChangeGroup(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestUserModel_ChangeGroup() {
 	type testCase struct {
 		vkid int
 		v    string
@@ -186,28 +140,18 @@ func TestUserModel_ChangeGroup(t *testing.T) {
 
 	for i, tcase := range testCases {
 		u, err := GetUserByVkID(tcase.vkid)
-		if err != nil {
-			t.Errorf("%d. Ошибка получения пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if err := u.ChangeGroup(tcase.v); err != nil {
-			t.Errorf("%d. Ошибка смены группы пользователя: %+v\n", i+1, err)
-			continue
-		}
-		if u.Group.Code != tcase.v {
-			t.Errorf("%d. Ошибка u.Group.Code != tcase.v; %s != %s\n", i+1, u.Group.Code, tcase.v)
-		}
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+
+		err = u.ChangeGroup(tcase.v)
+		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
+		suite.Equal(tcase.v, u.Group.Code)
 	}
 
 	u, err := GetUserByVkID(5)
+	tools.Fatal(suite.T(), suite.NoError(err))
 	code := u.Group.Code
-	if err != nil {
-		t.Errorf("Ошибка получения пользователя: %+v\n", err)
-	}
-	if err := u.ChangeGroup("99-5"); err == nil {
-		t.Fatalf("Группа сменена на несуществующую\n")
-	}
-	if u.Group.Code != code {
-		t.Errorf("Поменялась группа! u.Group.Code != code; %s != %s\n", u.Group.Code, code)
-	}
+
+	err = u.ChangeGroup("99-5")
+	tools.Fatal(suite.T(), suite.Error(err))
+	suite.Equal(code, u.Group.Code)
 }

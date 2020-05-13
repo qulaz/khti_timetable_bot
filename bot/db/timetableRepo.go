@@ -38,7 +38,7 @@ func GetTimetable() (*Timetable, error) {
 }
 
 // Имеется ли запись с расписанием в базе или нет
-func isTimetableExists() (bool, error) {
+func IsTimetableExists() (bool, error) {
 	var count int
 
 	row := db.QueryRow("SELECT COUNT(*) as count FROM timetable")
@@ -59,7 +59,7 @@ func createTimetable(db queryable, rawTimetable string) error {
 }
 
 func updateTimetable(db queryable, rawTimetable string) error {
-	exists, err := isTimetableExists()
+	exists, err := IsTimetableExists()
 	if err != nil {
 		return errors.Wrap(err, "ошибка определения кол-ва записей в таблице timetable")
 	}

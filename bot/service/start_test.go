@@ -3,15 +3,14 @@ package service
 import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
-	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
-	"testing"
 )
 
-func TestStartCommand_success(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestStartCommand_success() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 
 	data := NewData(mocks.StartMessage, common.StartCommand, common.UnknownErrorMessage, vk.NewKeyboard(true))
@@ -22,8 +21,9 @@ func TestStartCommand_success(t *testing.T) {
 	assert.Equal(t, groupsLimit+1, data.K.ButtonCount())
 }
 
-func TestStartCommand_reset(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestStartCommand_reset() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.PeerID = 1
 	mocks.StartMessage.Message.MessageBody = "reset"
@@ -37,8 +37,9 @@ func TestStartCommand_reset(t *testing.T) {
 	assert.Equal(t, groupsLimit+1, data.K.ButtonCount())
 }
 
-func TestStartCommand_keyboard_unsupported(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestStartCommand_keyboard_unsupported() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.ClientInfo.Keyboard = false
 
@@ -48,8 +49,9 @@ func TestStartCommand_keyboard_unsupported(t *testing.T) {
 	assert.True(t, assert.NotEqual(t, startMessage, data.Answer) && assert.Contains(t, data.Answer, startMessage))
 }
 
-func TestStartCommand_already_registered_user(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestStartCommand_already_registered_user() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.PeerID = 1
 
