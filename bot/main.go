@@ -63,6 +63,7 @@ func main() {
 	b, err := vk.CreateBot(vk.Settings{
 		GroupID: helpers.Config.VK_GROUP_ID,
 		Token:   helpers.Config.VK_GROUP_TOKEN,
+		Logger:  helpers.Logger,
 	})
 	if err != nil {
 		helpers.Logger.Fatalf("Ошибка создания бота: %+v", err)
@@ -82,6 +83,58 @@ func main() {
 	b.HandleMessageAllow(handlers.Allow)
 	b.HandleMessageDeny(handlers.Deny)
 
+	b.AddMiddleware(vk.Middleware{
+		OnPostProcessUpdate: func(b *vk.Bot, u *vk.Update) bool {
+			duration := time.Now().Sub(u.UpdateMeta.ReceiveTime)
+			helpers.Logger.Infow(
+				"Processed Update",
+				"update_id", u.UpdateMeta.EventID,
+				"process_time", duration.Milliseconds(),
+				"update", u,
+			)
+			return true
+		},
+		OnPreMessageNewUpdate: func(b *vk.Bot, u *vk.MessageNew) bool {
+			helpers.Logger.Infow(
+				"Received message_new",
+				"update_type", u.UpdateMeta.UpdateType,
+				"update_id", u.UpdateMeta.EventID,
+				"from_id", u.Message.FromID,
+				"peer_id", u.Message.PeerID,
+				"message_id", u.Message.ID,
+				"update", u,
+			)
+			return true
+		},
+		OnPostMessageNewUpdate: func(b *vk.Bot, u *vk.MessageNew) bool {
+			helpers.Logger.Infow(
+				"Processed message",
+				"update_type", u.UpdateMeta.UpdateType,
+				"update_id", u.UpdateMeta.EventID,
+				"from_id", u.Message.FromID,
+				"peer_id", u.Message.PeerID,
+				"message_id", u.Message.ID,
+				"update", u,
+				"handled", u.UpdateMeta.Handled,
+			)
+			return true
+		},
+		OnPreMessageAllowUpdate: func(b *vk.Bot, u *vk.MessageAllow) bool {
+			helpers.Logger.Infow("Received message allow update",
+				"update", u,
+				"from_id", u.UserID,
+			)
+			return true
+		},
+		OnPreMessageDenyUpdate: func(b *vk.Bot, u *vk.MessageDeny) bool {
+			helpers.Logger.Infow("Received message deny update",
+				"update", u,
+				"from_id", u.UserID,
+			)
+			return true
+		},
+	})
+
 	// Добавление периодической задачи проверки расписания на предмет обновления (раз в 2 часа)
 	c := cron.New()
 	if _, err := c.AddFunc("0 1/2 * * *", func() {
@@ -92,8 +145,17 @@ func main() {
 			)
 		}
 	}); err != nil {
-		helpers.Logger.Fatal(err)
+		helpers.Logger.Fatalf("Ошибка создания задачи обновления расписания: %+v", err)
 	}
+
+	// Добавление задачи, которая будет раз в 10 минут писать лог. Будет использоваться в качестве health check
+	if _, err := c.AddFunc("*/10 * * * *", func() {
+		helpers.Logger.Infow("Ping", "health", true)
+	}); err != nil {
+		helpers.Logger.Fatalf("Ошибка создания задачи health check: %+v", err)
+	}
+
+	c.Start()
 
 	// Запуск этой задачи непосредственно перед запуском бота (для начальной инициализации расписания в базе данных)
 	if err := parser.UpdateTimetable(b); err != nil {

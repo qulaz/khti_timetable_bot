@@ -1,7 +1,9 @@
 package common
 
 import (
+	"fmt"
 	"github.com/getsentry/sentry-go"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
 	"strconv"
 )
@@ -15,6 +17,10 @@ type Breadcrumb struct {
 // Шаблонная отправка ошибок на Sentry
 func SendHandlerErrToSentry(command string, err error, breadcrumbs ...Breadcrumb) {
 	sentry.WithScope(func(scope *sentry.Scope) {
+		var uid int
+		var eventID string
+		var update *vk.MessageNew
+
 		scope.SetTag("command", command)
 
 		breadLimit := len(breadcrumbs)
@@ -27,11 +33,22 @@ func SendHandlerErrToSentry(command string, err error, breadcrumbs ...Breadcrumb
 			)
 
 			if u, ok := breadcrumb.Value.(*vk.MessageNew); ok {
-				scope.SetUser(sentry.User{ID: strconv.Itoa(u.Message.PeerID)})
-				scope.SetTag("event_id", u.UpdateMeta.EventID)
+				uid = u.Message.PeerID
+				eventID = u.UpdateMeta.EventID
+				update = u
+				scope.SetUser(sentry.User{ID: strconv.Itoa(uid)})
+				scope.SetTag("event_id", eventID)
 			}
 		}
 
+		helpers.Logger.Errorw(
+			"Произошла ошибка в хендлере",
+			"err", fmt.Sprintf("%+v", err),
+			"command", command,
+			"from_id", uid,
+			"event_id", eventID,
+			"update", update,
+		)
 		sentry.CaptureException(err)
 	})
 }
