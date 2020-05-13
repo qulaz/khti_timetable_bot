@@ -6,12 +6,11 @@ import (
 
 // Модель пользователя
 type UserModel struct {
-	ID                  int
-	VkID                int
-	Group               GroupModel
-	IsActive            bool
-	IsSubscribed        bool
-	IsNewsletterEnabled bool
+	ID           int
+	VkID         int
+	Group        GroupModel
+	IsActive     bool
+	IsSubscribed bool
 }
 
 // Установка статуса активности пользователя
@@ -31,16 +30,6 @@ func (u *UserModel) SetSubscribe(b bool) error {
 		return errors.WithStack(err)
 	}
 	u.IsSubscribed = b
-	return nil
-}
-
-// Смена статуса подписки пользователя на новости вуза
-func (u *UserModel) SetNewsletterEnabling(b bool) error {
-	_, err := db.Exec("UPDATE users SET is_newsletter_enabled = $1 WHERE vk_id=$2", b, u.VkID)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	u.IsNewsletterEnabled = b
 	return nil
 }
 
@@ -64,21 +53,19 @@ func parseUserModel(row scanner) (*UserModel, error) {
 	var vkId int
 	var isActive bool
 	var isSubscribed bool
-	var isNewsletterEnabled bool
 	var groupId int
 	var groupCode string
 
-	if err := row.Scan(&id, &vkId, &isActive, &isSubscribed, &isNewsletterEnabled, &groupId, &groupCode); err != nil {
+	if err := row.Scan(&id, &vkId, &isActive, &isSubscribed, &groupId, &groupCode); err != nil {
 		return &UserModel{}, errors.WithStack(err)
 	}
 
 	return &UserModel{
-		ID:                  id,
-		VkID:                vkId,
-		Group:               newGroup(groupId, groupCode),
-		IsActive:            isActive,
-		IsSubscribed:        isSubscribed,
-		IsNewsletterEnabled: isNewsletterEnabled,
+		ID:           id,
+		VkID:         vkId,
+		Group:        newGroup(groupId, groupCode),
+		IsActive:     isActive,
+		IsSubscribed: isSubscribed,
 	}, nil
 }
 
@@ -95,8 +82,8 @@ func CreateUser(vkID int, groupID int) error {
 // Получение пользователя по его VK ID
 func GetUserByVkID(vkID int) (*UserModel, error) {
 	row := db.QueryRow(
-		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, "+
-			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id WHERE vk_id=$1",
+		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, groups.id, groups.code "+
+			"FROM users JOIN groups ON groups.id = users.group_id WHERE vk_id=$1",
 		vkID,
 	)
 	user, err := parseUserModel(row)
@@ -113,8 +100,8 @@ func GetUsers(limit, offset int) ([]*UserModel, error) {
 	users := make([]*UserModel, 0, limit)
 
 	rows, err := db.Query(
-		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, "+
-			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id LIMIT $1 OFFSET $2;",
+		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, groups.id, groups.code "+
+			"FROM users JOIN groups ON groups.id = users.group_id LIMIT $1 OFFSET $2;",
 		limit,
 		offset,
 	)
@@ -139,34 +126,9 @@ func GetSubscribedUsers() ([]*UserModel, error) {
 	users := make([]*UserModel, 0, 20)
 
 	rows, err := db.Query(
-		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, " +
-			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id " +
+		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, groups.id, groups.code " +
+			"FROM users JOIN groups ON groups.id = users.group_id " +
 			"WHERE users.is_subscribed = true AND users.is_active = true;",
-	)
-	if err != nil {
-		return users, errors.WithStack(err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		user, err := parseUserModel(rows)
-		if err != nil {
-			return users, err
-		}
-		users = append(users, user)
-	}
-
-	return users, nil
-}
-
-// Получение списка пользователей, которые подписаны на новости института/группы
-func GetUsersWithEnabledNewsletter() ([]*UserModel, error) {
-	users := make([]*UserModel, 0, 20)
-
-	rows, err := db.Query(
-		"SELECT users.id, users.vk_id, users.is_active, users.is_subscribed, users.is_newsletter_enabled, " +
-			"groups.id, groups.code FROM users JOIN groups ON groups.id = users.group_id " +
-			"WHERE users.is_newsletter_enabled = true AND users.is_active = true;",
 	)
 	if err != nil {
 		return users, errors.WithStack(err)

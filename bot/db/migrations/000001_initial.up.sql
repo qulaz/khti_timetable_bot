@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS users(
     vk_id INTEGER UNIQUE NOT NULL,
     group_id INTEGER REFERENCES groups(id) ON DELETE CASCADE,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    is_subscribed BOOLEAN NOT NULL DEFAULT true,
-    is_newsletter_enabled BOOLEAN NOT NULL DEFAULT true
+    is_subscribed BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS timetable(
