@@ -22,7 +22,7 @@ services:
       - "./.env:/app/.env"
 
   db:
-    container_name: khti_timetable_bot_db
+    container_name: khti_timetable_db
     image: postgres:12-alpine
     env_file:
       - .env
@@ -32,7 +32,7 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   adminer:
-    container_name: khti_timetable_bot_adminer
+    container_name: khti_timetable_adminer
     image: adminer
     networks:
       - internal
