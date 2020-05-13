@@ -7,8 +7,7 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
 )
 
-const startMessage = "Привет! Я бот Хакасского Технического Института. Я буду сообщать тебе об изменениях " +
-	"в расписании, важных новостях института и твоей группы.\n\nДля начала выбери группу, в которой ты учишься"
+const startMessage = "Для начала выбери группу, в которой ты учишься"
 
 var RegisteredUserTryingToUseStartCommandError = errors.New("Registered user trying to use start command")
 

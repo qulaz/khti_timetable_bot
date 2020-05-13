@@ -70,8 +70,9 @@ func main() {
 
 	// Регистрация обработчиков сообщений
 	b.HandleMessage("Начать", handlers.Start)
+	b.HandleMessage(`"/start"`, handlers.Start)
+	b.HandleCommand(`/start`, handlers.Start)
 	b.HandleCommand(common.StartCommand, handlers.Start)
-	b.HandleCommand(`"`+common.StartCommand+`"`, handlers.Start)
 	b.HandleCommand(common.MainCommand, handlers.Main)
 	b.HandleCommand(common.GroupCommand, handlers.Group)
 	b.HandleCommand(common.RingCommand, handlers.Ring)

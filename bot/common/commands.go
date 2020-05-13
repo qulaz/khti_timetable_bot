@@ -2,7 +2,7 @@ package common
 
 // Список всех доступных команд
 const (
-	StartCommand     = "/start"
+	StartCommand     = "start"
 	MainCommand      = "/main"
 	GroupCommand     = "/группа"
 	TimetableCommand = "/расписание"

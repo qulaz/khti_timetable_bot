@@ -142,8 +142,7 @@ func GroupCommand(d *Data) error {
 		d.K = MainKeyboard
 
 		if isNewUser {
-			d.Answer = "Группа выбрана! Теперь тебе будут приходить уведомления об изменениях в расписании, " +
-				"а также о важных новостях института и группы.\n\n" +
+			d.Answer = "Группа выбрана! Теперь тебе будут приходить уведомления об изменениях в расписании.\n\n" +
 				"Подробнее о командах и о том, что они делают:\n"
 			if d.u.ClientInfo.IsKeyboardSupported() {
 				d.Answer += MainKeyboardHelp
