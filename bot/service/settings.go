@@ -9,17 +9,13 @@ import (
 )
 
 func buildSettingsKeyboard(u *db.UserModel) (string, *vk.Keyboard) {
-	// Формат: номер группы, subscribedButtonLabel, subscribedState, newsletterButtonLabel, newsletterState
+	// Формат: номер группы, subscribedButtonLabel, subscribedState
 	const SettingKeyboardHelp = "«Изменить группу» - смена установленной группы. Текущая группа: %s;\n" +
-		"«%s» - %s оповещения об изменениях в расписании;\n" +
-		"«%s» - %s рассылку о важных событиях института и группы;\n"
+		"«%s» - %s оповещения об изменениях в расписании;"
 	var (
-		newsletterButtonLabel string
-		newsletterButtonColor string
 		subscribedButtonLabel string
 		subscribedButtonColor string
 		subscribedState       string
-		newsletterState       string
 	)
 
 	if u.IsSubscribed {
@@ -30,15 +26,6 @@ func buildSettingsKeyboard(u *db.UserModel) (string, *vk.Keyboard) {
 		subscribedButtonLabel = "Вкл. оповещения о расписании"
 		subscribedButtonColor = vk.COLOR_POSITIVE
 		subscribedState = "включить"
-	}
-	if u.IsNewsletterEnabled {
-		newsletterButtonLabel = "Выкл. новостную рассылку института"
-		newsletterButtonColor = vk.COLOR_NEGATIVE
-		newsletterState = "выключить"
-	} else {
-		newsletterButtonLabel = "Вкл. новостную рассылку института"
-		newsletterButtonColor = vk.COLOR_POSITIVE
-		newsletterState = "включить"
 	}
 
 	k := &vk.Keyboard{
@@ -68,16 +55,6 @@ func buildSettingsKeyboard(u *db.UserModel) (string, *vk.Keyboard) {
 				vk.TextButton{
 					Action: vk.TextButtonAction{
 						Type:    vk.TEXT_BUTTON,
-						Label:   newsletterButtonLabel,
-						Payload: &vk.ButtonPayload{Command: common.SettingsCommand, Body: "рассылка"},
-					},
-					Color: newsletterButtonColor,
-				},
-			},
-			{
-				vk.TextButton{
-					Action: vk.TextButtonAction{
-						Type:    vk.TEXT_BUTTON,
 						Label:   "Назад",
 						Payload: &vk.ButtonPayload{Command: common.MainCommand},
 					},
@@ -88,10 +65,7 @@ func buildSettingsKeyboard(u *db.UserModel) (string, *vk.Keyboard) {
 		Inline: false,
 	}
 
-	return fmt.Sprintf(
-		SettingKeyboardHelp, u.Group.Code, subscribedButtonLabel,
-		subscribedState, newsletterButtonLabel, newsletterState,
-	), k
+	return fmt.Sprintf(SettingKeyboardHelp, u.Group.Code, subscribedButtonLabel, subscribedState), k
 }
 
 func SettingsCommand(d *Data) error {
@@ -103,14 +77,6 @@ func SettingsCommand(d *Data) error {
 	switch body := d.u.Message.MessageBody; body {
 	case "расписание":
 		if err := user.SetSubscribe(!user.IsSubscribed); err != nil {
-			return errors.WithStack(err)
-		}
-
-		d.Answer = "Готово!"
-		_, d.K = buildSettingsKeyboard(user)
-		return nil
-	case "рассылка":
-		if err := user.SetNewsletterEnabling(!user.IsNewsletterEnabled); err != nil {
 			return errors.WithStack(err)
 		}
 

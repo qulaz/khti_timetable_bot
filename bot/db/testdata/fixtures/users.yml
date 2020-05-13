@@ -3,76 +3,63 @@
   group_id: 1
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 2
   vk_id: 2
   group_id: 2
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 3
   vk_id: 3
   group_id: 3
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 4
   vk_id: 4
   group_id: 4
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 5
   vk_id: 5
   group_id: 5
   is_active: false
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 6
   vk_id: 6
   group_id: 6
   is_active: false
   is_subscribed: false
-  is_newsletter_enabled: true
 - id: 7
   vk_id: 7
   group_id: 1
   is_active: false
   is_subscribed: false
-  is_newsletter_enabled: false
 - id: 8
   vk_id: 8
   group_id: 2
   is_active: true
   is_subscribed: false
-  is_newsletter_enabled: true
 - id: 9
   vk_id: 9
   group_id: 3
   is_active: true
   is_subscribed: false
-  is_newsletter_enabled: false
 - id: 10
   vk_id: 10
   group_id: 4
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: false
 - id: 11
   vk_id: 11
   group_id: 5
   is_active: false
   is_subscribed: true
-  is_newsletter_enabled: false
 - id: 12
   vk_id: 12
   group_id: 23
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true
 - id: 13
   vk_id: 13
   group_id: 27
   is_active: true
   is_subscribed: true
-  is_newsletter_enabled: true

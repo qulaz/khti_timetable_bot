@@ -15,7 +15,7 @@ func (suite *DBTestSuite) TestCreateUser() {
 	u, err := GetUserByVkID(vkid)
 	tools.Fatal(suite.T(), suite.NoError(err))
 	suite.Equal(vkid, u.VkID)
-	suite.Falsef(!u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive, "user: %+v", u)
+	suite.Falsef(!u.IsSubscribed || !u.IsActive, "user: %+v", u)
 
 	err = CreateUser(1, 5)
 	suite.Error(err)
@@ -27,7 +27,7 @@ func (suite *DBTestSuite) TestGetUserByVkID() {
 	u, err := GetUserByVkID(vkid)
 	tools.Fatal(suite.T(), suite.NoError(err))
 	suite.Equal(vkid, u.VkID)
-	suite.Falsef(!u.IsNewsletterEnabled || !u.IsSubscribed || !u.IsActive, "user: %+v", u)
+	suite.Falsef(!u.IsSubscribed || !u.IsActive, "user: %+v", u)
 }
 
 func (suite *DBTestSuite) TestGetUsers() {
@@ -74,30 +74,6 @@ func (suite *DBTestSuite) TestUserModel_SetSubscribe() {
 		err = u.SetSubscribe(tcase.v)
 		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
 		suite.Equal(tcase.v, u.IsSubscribed)
-	}
-}
-
-func (suite *DBTestSuite) TestUserModel_SetNewsletterEnabling() {
-	type testCase struct {
-		vkid int
-		v    bool
-	}
-	testCases := []testCase{
-		{1, false},
-		{1, true},
-		{1, true},
-		{6, false},
-		{6, true},
-		{7, true},
-	}
-
-	for i, tcase := range testCases {
-		u, err := GetUserByVkID(tcase.vkid)
-		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
-
-		err = u.SetNewsletterEnabling(tcase.v)
-		tools.Fatal(suite.T(), suite.NoErrorf(err, "testCase: %d", i+1))
-		suite.Equal(tcase.v, u.IsNewsletterEnabled)
 	}
 }
 
