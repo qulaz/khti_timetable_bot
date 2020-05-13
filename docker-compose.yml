@@ -19,7 +19,7 @@ services:
     networks:
       - internal
     volumes:
-      - "./:/app/"
+      - "./.env:/app/.env"
 
   db:
     container_name: khti_timetable_bot_db
