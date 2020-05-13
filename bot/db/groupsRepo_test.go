@@ -1,49 +1,57 @@
 package db
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gopkg.in/khaiql/dbcleaner.v2/engine"
 	"testing"
 )
 
+var Cleaner = dbcleaner.New()
+
 const GroupFixtureCount = 33
 
-func TestMain(m *testing.M) {
-	TestMainWithDb(m)
+type DBTestSuite struct {
+	suite.Suite
 }
 
-func TestGroupsCount(t *testing.T) {
-	PrepareTestDatabase()
+func (suite *DBTestSuite) SetupSuite() {
+	common.TestInits()
+	InitTestDatabase()
+	db := engine.NewPostgresEngine(helpers.Config.POSTGRES_DSN)
+	Cleaner.SetEngine(db)
+}
 
+func (suite *DBTestSuite) TearDownSuite() {
+	Cleaner.Clean("groups", "timetable", "users")
+	CloseDatabase()
+}
+
+func (suite *DBTestSuite) SetupTest() {
+	Cleaner.Acquire("groups", "timetable", "users")
+	PrepareTestDatabase()
+}
+
+func (suite *DBTestSuite) TestGroupsCount() {
 	c, err := GroupsCount()
-	if err != nil {
-		t.Errorf("%+v\n", err)
-	}
-
-	if c != GroupFixtureCount {
-		t.Errorf("Ожидаемое кол-во групп %d не равно действительному %d\n", GroupFixtureCount, c)
-	}
+	tools.Fatal(suite.T(), assert.NoError(suite.T(), err))
+	assert.Equal(suite.T(), GroupFixtureCount, c)
 }
 
-func TestCreateGroupIfNotExists(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestCreateGroupIfNotExists() {
 	code := "99-1"
-	if err := CreateGroupIfNotExists(code); err != nil {
-		t.Fatalf("Ошибка при создании группы: %+v\n", err)
-	}
+	tools.Fatal(suite.T(), suite.NoError(CreateGroupIfNotExists(code)))
 
 	g, err := GetGroupByGroupCode(code)
-	if err != nil {
-		t.Fatalf("Ошибка получении группы: %+v\n", err)
-	}
-
-	if g.Code != code {
-		t.Fatalf("Ожидаемый код группы %q не совпадает с действительным %q\n", code, g.Code)
-	}
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(code, g.Code)
 }
 
-func TestGetGroups(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestGetGroups() {
 	type testCase struct {
 		limit  int
 		offset int
@@ -61,64 +69,49 @@ func TestGetGroups(t *testing.T) {
 	for i, tcase := range testCases {
 		groups, err := GetGroups(tcase.limit, tcase.offset)
 		if err != nil {
-			t.Errorf("%d. Ошибка при получении списка групп в тест кейсе: %+v\n", i+1, err)
+			suite.T().Errorf("%d. Ошибка при получении списка групп в тест кейсе: %+v\n", i+1, err)
 			continue
 		}
-		if lenG := len(groups); lenG != tcase.len {
-			t.Errorf("%d. Ожидаемое кол-во групп %d не равно действительному %d\n", i+1, tcase.len, lenG)
-		}
+		suite.Equalf(tcase.len, len(groups), "testCase %d", i+1)
 	}
 }
 
-func TestGetGroup(t *testing.T) {
-	PrepareTestDatabase()
-
-	if g, err := GetGroup(1); err != nil {
-		t.Fatalf("Ошибка при получении группы с ID 1: %+v\n", err)
-	} else {
-		if g.Code != "16-1" {
-			t.Fatalf("Ожидаемый код группы %q не совпадает с действительным %q\n", "16-1", g.Code)
-		}
-	}
+func (suite *DBTestSuite) TestGetGroup() {
+	g, err := GetGroup(1)
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal("16-1", g.Code)
 }
 
-func TestGetGroupByGroupCode(t *testing.T) {
-	PrepareTestDatabase()
-
+func (suite *DBTestSuite) TestGetGroupByGroupCode() {
 	code := "58-1"
-	if g, err := GetGroupByGroupCode(code); err != nil {
-		t.Fatalf("Ошибка при получении группы %q: %+v\n", code, err)
-	} else {
-		if g.Code != code {
-			t.Fatalf("Ожидаемый код группы %q не совпадает с действительным %q\n", code, g.Code)
-		}
-	}
+	g, err := GetGroupByGroupCode(code)
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(code, g.Code)
 }
 
-func TestCreateGroupWithTransaction(t *testing.T) {
+func (suite *DBTestSuite) TestCreateGroupWithTransaction() {
 	tx, err := db.Begin()
-	if err != nil {
-		t.Fatalf("Ошибка создания транзакции: %+v\n", err)
-	}
+	tools.Fatal(suite.T(), suite.NoError(err))
 
 	codes := []string{"99-1", "98-1", "97-1", "96-1", "99-2", "99-3", "98-2", "98-3", "97-2", "97-3", "96-2", "96-3"}
 	codesCount := len(codes)
 	for i, code := range codes {
 		if i == codesCount-1 {
-			if err := tx.Rollback(); err != nil {
-				t.Fatalf("Ошибка отмены транзакции: %+v\n", err)
-			}
+			err := tx.Rollback()
+			tools.Fatal(suite.T(), suite.NoError(err))
 			break
 		}
 
-		if err := createGroupIfNotExists(tx, code); err != nil {
-			t.Fatalf("Ошибка при создании группы с кодом %q: %+v\n", code, err)
-		}
+		err := createGroupIfNotExists(tx, code)
+		tools.Fatal(suite.T(), suite.NoError(err))
 	}
 
 	for _, code := range codes {
-		if _, err := GetGroupByGroupCode(code); err == nil {
-			t.Errorf("Группа с кодом %q создалась не смотря на отмену транзакции\n", code)
-		}
+		_, err := GetGroupByGroupCode(code)
+		suite.Errorf(err, "code: %s", code)
 	}
+}
+
+func TestDBTestSuite(t *testing.T) {
+	suite.Run(t, new(DBTestSuite))
 }

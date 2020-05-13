@@ -5,11 +5,12 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
-	"testing"
 	"time"
 )
 
-func TestWeekCommand_weekNum(t *testing.T) {
+func (suite *ServiceTestSuite) TestWeekCommand_weekNum() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = ""
 
@@ -49,7 +50,9 @@ func TestWeekCommand_weekNum(t *testing.T) {
 	}
 }
 
-func TestWeekCommand(t *testing.T) {
+func (suite *ServiceTestSuite) TestWeekCommand() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = ""
 

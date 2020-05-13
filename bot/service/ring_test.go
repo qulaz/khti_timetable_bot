@@ -190,7 +190,9 @@ func TestTimeToRing(t *testing.T) {
 	}
 }
 
-func TestRingCommand(t *testing.T) {
+func (suite *ServiceTestSuite) TestRingCommand() {
+	t := suite.T()
+
 	common.TestInits()
 	mocks.InitStartMocks()
 	type testCase struct {

@@ -10,12 +10,11 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 	"time"
 )
 
-func TestSendNotifyAboutTimetableUpdate(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestSendNotifyAboutTimetableUpdate() {
+	t := suite.T()
 
 	var c int
 

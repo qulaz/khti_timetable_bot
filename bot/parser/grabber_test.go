@@ -2,10 +2,14 @@ package parser
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/common"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
+	"gitlab.com/qulaz/khti_timetable_bot/bot/helpers"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
 	"gitlab.com/qulaz/khti_timetable_bot/vk"
+	"gopkg.in/khaiql/dbcleaner.v2"
+	"gopkg.in/khaiql/dbcleaner.v2/engine"
 	"log"
 	"net"
 	"net/http"
@@ -14,11 +18,16 @@ import (
 	"testing"
 )
 
-func TestMain(m *testing.M) {
-	db.TestMainWithDb(m)
+type GrabberTestSuite struct {
+	suite.Suite
 }
 
-func SetupTestServer() *httptest.Server {
+var (
+	Cleaner = dbcleaner.New()
+	ts      *httptest.Server
+)
+
+func SetupTestServer() {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", 8044))
 	if err != nil {
 		log.Fatal(err)
@@ -45,45 +54,57 @@ func SetupTestServer() *httptest.Server {
 		},
 	)
 
-	ts := httptest.NewUnstartedServer(router)
+	ts = httptest.NewUnstartedServer(router)
 	ts.Listener.Close()
 	ts.Listener = l
 	ts.Start()
-
-	return ts
 }
 
-func TestGrabTimetableFromSite(t *testing.T) {
-	ts := SetupTestServer()
-	defer ts.Close()
+func (suite *GrabberTestSuite) SetupSuite() {
+	common.TestInits()
+	db.InitTestDatabase()
+	db := engine.NewPostgresEngine(helpers.Config.POSTGRES_DSN)
+	Cleaner.SetEngine(db)
+	SetupTestServer()
+}
 
+func (suite *GrabberTestSuite) TearDownSuite() {
+	Cleaner.Clean("groups", "timetable", "users")
+	db.CloseDatabase()
+	ts.Close()
+}
+
+func (suite *GrabberTestSuite) SetupTest() {
+	Cleaner.Acquire("groups", "timetable", "users")
+	db.PrepareTestDatabase()
+}
+
+func (suite *GrabberTestSuite) TestGrabTimetableFromSite() {
 	baseUrl = ts.URL
 
 	filePath, err := GrabTimetableFromSite()
-	tools.Fatal(t, assert.NoError(t, err))
-	tools.Fatal(t, assert.Equal(t, filePath, "timetable.xls"))
-	assert.NoError(t, os.Remove(filePath))
+	tools.Fatal(suite.T(), suite.NoError(err))
+	tools.Fatal(suite.T(), suite.Equal(filePath, "timetable.xls"))
+	suite.NoError(os.Remove(filePath))
 }
 
-func TestUpdateTimetable_empty_db(t *testing.T) {
-	ts := SetupTestServer()
-	defer ts.Close()
+func (suite *GrabberTestSuite) TestUpdateTimetable_empty_db() {
+	Cleaner.Clean("groups", "timetable", "users")
+	Cleaner.Acquire("groups", "timetable", "users")
+
 	baseUrl = ts.URL
 
-	tools.Fatal(t, assert.NoError(t, UpdateTimetable(nil)))
+	tools.Fatal(suite.T(), suite.NoError(UpdateTimetable(nil)))
 
 	timetable, err := db.GetTimetable()
-	tools.Fatal(t, assert.NoError(t, err))
+	tools.Fatal(suite.T(), suite.NoError(err))
 	expectedTimetable, err := Parse("parser/testdata/different_timetable.xls")
-	tools.Fatal(t, assert.NoError(t, err))
-	assert.Equal(t, expectedTimetable, timetable)
-	assert.NoError(t, os.Remove("timetable.xls"))
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(expectedTimetable, timetable)
+	suite.NoError(os.Remove("timetable.xls"))
 }
 
-func TestUpdateTimetable_old_timetable(t *testing.T) {
-	db.PrepareTestDatabase()
-	ts := SetupTestServer()
-	defer ts.Close()
+func (suite *GrabberTestSuite) TestUpdateTimetable_old_timetable() {
 	baseUrl = ts.URL
 
 	b, err := vk.CreateBot(vk.Settings{
@@ -91,13 +112,17 @@ func TestUpdateTimetable_old_timetable(t *testing.T) {
 		Token:   "token",
 		BaseURL: ts.URL,
 	})
-	tools.Fatal(t, assert.NoError(t, err))
-	tools.Fatal(t, assert.NoError(t, UpdateTimetable(b)))
+	tools.Fatal(suite.T(), suite.NoError(err))
+	tools.Fatal(suite.T(), suite.NoError(UpdateTimetable(b)))
 
 	timetable, err := db.GetTimetable()
-	tools.Fatal(t, assert.NoError(t, err))
+	tools.Fatal(suite.T(), suite.NoError(err))
 	expectedTimetable, err := Parse("parser/testdata/different_timetable.xls")
-	tools.Fatal(t, assert.NoError(t, err))
-	assert.Equal(t, expectedTimetable, timetable)
-	assert.NoError(t, os.Remove("timetable.xls"))
+	tools.Fatal(suite.T(), suite.NoError(err))
+	suite.Equal(expectedTimetable, timetable)
+	suite.NoError(os.Remove("timetable.xls"))
+}
+
+func TestGrabberSuite(t *testing.T) {
+	suite.Run(t, new(GrabberTestSuite))
 }

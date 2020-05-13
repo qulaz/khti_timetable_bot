@@ -33,12 +33,12 @@ test_bot:
     - master
     - merge_requests
   variables:
-    IS_CI_TEST: "true"
     POSTGRES_HOST: "postgres"
     POSTGRES_PORT: 5432
     POSTGRES_USER: "postgres"
     POSTGRES_DB: "test"
     POSTGRES_PASSWORD: "postgres"
+    POSTGRES_DSN: postgres://postgres:postgres@postgres:5432/test?sslmode=disable
   script:
     - cd bot
     - cat $ENV_FILE > .env

@@ -6,12 +6,11 @@ import (
 	"gitlab.com/qulaz/khti_timetable_bot/bot/db"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/mocks"
 	"gitlab.com/qulaz/khti_timetable_bot/bot/tools"
-	"testing"
 	"time"
 )
 
-func TestNextLesson(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestNextLesson() {
+	t := suite.T()
 
 	timetable, err := db.GetTimetable()
 	assert.NoError(t, err)
@@ -72,8 +71,9 @@ func TestNextLesson(t *testing.T) {
 	}
 }
 
-func TestTimetableCommand_today_tomorrow(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestTimetableCommand_today_tomorrow() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 
 	type testCase struct {
@@ -159,8 +159,9 @@ func TestTimetableCommand_today_tomorrow(t *testing.T) {
 	}
 }
 
-func TestTimetableCommand_next_lesson(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestTimetableCommand_next_lesson() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 	mocks.StartMessage.Message.MessageBody = "следующая"
 
@@ -224,8 +225,9 @@ func TestTimetableCommand_next_lesson(t *testing.T) {
 	}
 }
 
-func TestTimetableCommand_default(t *testing.T) {
-	db.PrepareTestDatabase()
+func (suite *ServiceTestSuite) TestTimetableCommand_default() {
+	t := suite.T()
+
 	mocks.InitStartMocks()
 
 	type testCase struct {
